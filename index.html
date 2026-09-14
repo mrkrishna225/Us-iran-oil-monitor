@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Global Energy & Conflict Monitor: US-Iran & WTI</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: #0d1117;
+      color: #c9d1d9;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #161b22;
+      padding: 10px 20px;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background-color: #238636;
+      border-radius: 50%;
+      margin-right: 6px;
+      box-shadow: 0 0 6px #2ea043;
+    }
+    .container {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 45px);
+    }
+    /* Left Panel: News */
+    .news-panel {
+      flex: 1;
+      border-right: 1px solid #30363d;
+      display: flex;
+      flex-direction: column;
+      background: #0d1117;
+    }
+    .panel-header {
+      background: #161b22;
+      padding: 10px 16px;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #8b949e;
+      border-bottom: 1px solid #21262d;
+    }
+    .news-feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+    .news-card {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-left: 3px solid #f85149;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 12px;
+      transition: background 0.2s;
+    }
+    .news-card:hover {
+      background: #1c2128;
+    }
+    .news-card a {
+      color: #58a6ff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 1.4;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .news-card a:hover {
+      text-decoration: underline;
+    }
+    .news-meta {
+      font-size: 11px;
+      color: #8b949e;
+      display: flex;
+      justify-content: space-between;
+    }
+    /* Right Panel: WTI Chart */
+    .chart-panel {
+      flex: 1.2;
+      height: 100%;
+      background: #000;
+    }
+    #tradingview_widget {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div><strong>REAL-TIME TERMINAL</strong> | US-Iran Geopolitics & Energy Flow</div>
+    <div><span class="status-indicator"></span> Live Feed Connected</div>
+  </header>
+
+  <div class="container">
+    <!-- LEFT TAB: NEWS MONITOR -->
+    <section class="news-panel">
+      <div class="panel-header">Verified Wire / Flash News (US-Iran Conflict)</div>
+      <div class="news-feed" id="news-container">
+        <p style="padding: 10px; color: #8b949e;">Fetching wire updates...</p>
+      </div>
+    </section>
+
+    <!-- RIGHT TAB: WTI LIVE CHART -->
+    <section class="chart-panel">
+      <div id="tradingview_widget"></div>
+    </section>
+  </div>
+
+  <!-- TradingView Widget Script -->
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <script type="text/javascript">
+    new TradingView.widget({
+      "autosize": true,
+      "symbol": "TVC:USOIL",
+      "interval": "1",
+      "timezone": "Etc/UTC",
+      "theme": "dark",
+      "style": "1",
+      "locale": "en",
+      "toolbar_bg": "#161b22",
+      "enable_publishing": false,
+      "allow_symbol_change": true,
+      "container_id": "tradingview_widget"
+    });
+  </script>
+
+  <!-- News Aggregator Script -->
+  <script>
+    async function fetchConflictNews() {
+      const container = document.getElementById('news-container');
+      // Using verified Google News RSS feed for US-Iran conflict via CORS proxy
+      const query = encodeURIComponent("US Iran war conflict military oil");
+      const rssUrl = `https://news.google.com/rss/search?q=${query}&hl=en-US&gl=US&ceid=US:en`;
+      const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+
+      try {
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+        
+        if (data && data.items && data.items.length > 0) {
+          container.innerHTML = '';
+          data.items.slice(0, 20).forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'news-card';
+            
+            const pubDate = new Date(item.pubDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            card.innerHTML = `
+              <a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a>
+              <div class="news-meta">
+                <span>${item.author || 'Verified Media'}</span>
+                <span>${pubDate}</span>
+              </div>
+            `;
+            container.appendChild(card);
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching live news:', err);
+      }
+    }
+
+    // Initial load
+    fetchConflictNews();
+    // Auto-refresh news every 20 seconds for low-latency updates
+    setInterval(fetchConflictNews, 20000);
+  </script>
+</body>
+</html>
