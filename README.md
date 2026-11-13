@@ -1,5 +1,10 @@
 # US-Iran Oil Monitor
 
-A simple monitoring page that tracks news around US-Iran oil flows and geopolitical developments.
+A terminal-style monitoring page that pulls live news and data on US-Iran geopolitics
+and energy flows.
 
-Built with plain HTML. Nothing fancy — just wanted a quick way to follow the situation.
+- Left panel: wire/flash news feed on the conflict
+- Right panel: WTI crude oil price and related energy data
+- Has a "REAL-TIME TERMINAL" look with a green status indicator
+
+Single `index.html` file, no dependencies. Just open it in a browser.
